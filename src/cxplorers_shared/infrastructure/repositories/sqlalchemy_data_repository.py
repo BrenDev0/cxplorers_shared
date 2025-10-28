@@ -14,8 +14,9 @@ E = TypeVar("E")  # Domain Entity
 M = TypeVar("M")  # SQLAlchemy Model
 
 class SqlAlchemyDataRepository(DataRepository[E], Generic[E, M]):
-    def __init__(self, model: Type[M]):
+    def __init__(self, model: Type[M], session: Session):
         self.model = model
+        self.__session = session
 
     @abstractmethod
     def _to_entity(self, model: M) -> E:
@@ -28,22 +29,22 @@ class SqlAlchemyDataRepository(DataRepository[E], Generic[E, M]):
         raise NotImplementedError
 
     def create(self, data: E) -> E:
-        with self._get_session() as db:
-            # Convert entity to model
-            model_instance = self._to_model(data)
-            db.add(model_instance)
-            db.commit()
-            db.refresh(model_instance)
-            
-            # Convert back to entity
-            return self._to_entity(model_instance)
+        
+        # Convert entity to model
+        model_instance = self._to_model(data)
+        self.__session.add(model_instance)
+        self.__session.commit()
+        self.__session.refresh(model_instance)
+        
+        # Convert back to entity
+        return self._to_entity(model_instance)
 
     def get_one(self, key: str, value: str | uuid.UUID) -> Optional[E]:
         stmt = select(self.model).where(getattr(self.model, key) == value)
 
-        with self._get_session() as db:
-            result = db.execute(stmt).scalar_one_or_none()
-            return self._to_entity(result) if result else None
+        
+        result = self.__session.execute(stmt).scalar_one_or_none()
+        return self._to_entity(result) if result else None
 
     def get_many(
         self,
@@ -63,48 +64,48 @@ class SqlAlchemyDataRepository(DataRepository[E], Generic[E, M]):
         if limit is not None:
             stmt = stmt.limit(limit)
         
-        with self._get_session() as db:
-            results = db.execute(stmt).scalars().all()
-            return [self._to_entity(result) for result in results]
+       
+        results = self.__session.execute(stmt).scalars().all()
+        return [self._to_entity(result) for result in results]
     
     def get_all(self) -> List[E]:
         stmt = select(self.model)
 
-        with self._get_session() as db:
-            results = db.execute(stmt).scalars().all()
-            return [self._to_entity(result) for result in results]
+        
+        results = self.__session.execute(stmt).scalars().all()
+        return [self._to_entity(result) for result in results]
 
     def update(self, key: str, value: str | uuid.UUID, changes: dict) -> Optional[E]:
         stmt = update(self.model).where(getattr(self.model, key) == value).values(**changes).returning(*self.model.__table__.c)
 
-        with self._get_session() as db:
-            result = db.execute(stmt)
-            db.commit()
-            
-            updated_rows = result.fetchall()
-            
-            if not updated_rows:
-                return None
-            
-            # Create model instance and convert to entity
-            updated_model = self.model(**updated_rows[0]._mapping)
-            return self._to_entity(updated_model)
+        
+        result = self.__session.execute(stmt)
+        self.__session.commit()
+        
+        updated_rows = result.fetchall()
+        
+        if not updated_rows:
+            return None
+        
+        # Create model instance and convert to entity
+        updated_model = self.model(**updated_rows[0]._mapping)
+        return self._to_entity(updated_model)
 
     def delete(self, key: str, value: str | uuid.UUID) -> List[E] | E | None:
         stmt = delete(self.model).where(getattr(self.model, key) == value).returning(*self.model.__table__.c)
 
-        with self._get_session() as db:
-            result = db.execute(stmt)
-            db.commit()
-            
-            deleted_rows = result.fetchall()
-            
-            if not deleted_rows:
-                return None 
-            
-            if len(deleted_rows) == 1:
-                deleted_model = self.model(**deleted_rows[0]._mapping)
-                return self._to_entity(deleted_model)
-            else:
-                deleted_models = [self.model(**row._mapping) for row in deleted_rows]
-                return [self._to_entity(model) for model in deleted_models]
+  
+        result = self.__session.execute(stmt)
+        self.__session.commit()
+        
+        deleted_rows = result.fetchall()
+        
+        if not deleted_rows:
+            return None 
+        
+        if len(deleted_rows) == 1:
+            deleted_model = self.model(**deleted_rows[0]._mapping)
+            return self._to_entity(deleted_model)
+        else:
+            deleted_models = [self.model(**row._mapping) for row in deleted_rows]
+            return [self._to_entity(model) for model in deleted_models]
