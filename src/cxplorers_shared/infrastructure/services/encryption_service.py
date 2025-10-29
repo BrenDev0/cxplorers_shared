@@ -1,7 +1,9 @@
 from cryptography.fernet import Fernet
 import os 
 
-class EncryptionService:
+from src.cxplorers_shared.domain.services.encryption_service_base import EncryptionServiceBase
+
+class EncryptionService(EncryptionServiceBase):
     def __init__(self):
         self.secret_key = os.getenv("ENCRYPTION_KEY")
         self.fernet = Fernet(self.secret_key)

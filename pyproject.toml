@@ -1,6 +1,6 @@
 [project]
 name = "cxplorers-shared"
-version = "0.1.7"
+version = "0.1.8"
 description = "Shared utilities for cxplorers microservices"
 requires-python = ">=3.8"
 license = {text = "MIT"}
@@ -8,7 +8,8 @@ license = {text = "MIT"}
 dependencies = [
     "httpx>=0.28.1",
     "cryptography>=46.0.3",
-    "sqlalchemy>=2.0.44"
+    "sqlalchemy>=2.0.44",
+    "pydantic>=2.12.3",
 ]
 
 [build-system]
