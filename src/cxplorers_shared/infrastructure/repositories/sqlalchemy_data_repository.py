@@ -5,7 +5,7 @@ from sqlalchemy import select, update, delete
 from typing import TypeVar, Generic, Type, List, Optional, Generator
 import uuid
 
-from src.cxplorers_shared.domain.repositories.data_repository_base import DataRepository
+from src.cxplorers_shared.infrastructure.repositories.sqlalchemy_data_repository import DataRepository
 
 
 
