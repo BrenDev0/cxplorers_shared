@@ -1,7 +1,7 @@
 from cryptography.fernet import Fernet
 import os 
 
-from src.cxplorers_shared.domain.services.encryption_service_base import EncryptionServiceBase
+from cxplorers_shared.domain.services.encryption_service_base import EncryptionServiceBase
 
 class EncryptionService(EncryptionServiceBase):
     def __init__(self):
