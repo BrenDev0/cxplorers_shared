@@ -5,7 +5,7 @@ from cxplorers_shared.domain.exceptions.repository import RepositoryError
 
 logger = logging.getLogger("Error_handler")
 
-def service_error_handler(module: str, type: str = "python") -> Callable:
+def error_handler(module: str, type: str = "python") -> Callable:
     def decorator(func: Callable) -> Callable:
         @wraps(func) 
         def wrapper(*args: Any, **kwargs: Any) -> Any:
