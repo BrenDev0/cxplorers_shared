@@ -13,9 +13,7 @@ def error_handler(module: str, type: str = "python") -> Callable:
                 return func(*args, **kwargs)
             except Exception as e:
                 logger.error(
-                    msg=f"Error in {module}.{func.__name__}: {str(e)}",
-                    exc_info=True,
-                    stacklevel=2
+                    msg=f"Error in {module}.{func.__name__}: {str(e)}"
                 )
 
                 match type:
