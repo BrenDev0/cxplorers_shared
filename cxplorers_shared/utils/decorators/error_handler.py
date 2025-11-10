@@ -12,19 +12,16 @@ def error_handler(module: str, type: str = "python") -> Callable:
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                logger.log(
-                    msg=f"Error in {func.__name__}",
-                    level=logging.ERROR,
-                    name=f"{module}.{func.__name__}",
+                logger.error(
+                    msg=f"Error in {module}.{func.__name__}: {str(e)}",
                     exc_info=True,
-                    stack_info=2
+                    stacklevel=2
                 )
 
                 match type:
                     case "repository":
                         raise RepositoryError()
                     case _:
-                        raise
-                  
+                        raise     
         return wrapper
     return decorator

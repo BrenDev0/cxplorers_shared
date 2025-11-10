@@ -1,6 +1,6 @@
 [project]
 name = "cxplorers-shared"
-version = "0.2.9"
+version = "0.3.0"
 description = "Shared utilities for cxplorers microservices"
 requires-python = ">=3.8"
 license = {text = "MIT"}
